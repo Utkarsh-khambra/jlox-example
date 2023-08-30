@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 # ---- Project ----
 # Note: update this to your new project's name and version
 project(
-  crafting_interp
+  jlox
   VERSION 1.0
   LANGUAGES CXX
 )
@@ -30,20 +30,21 @@ find_package(Catch2 REQUIRED)
 # automatically. Keep that in mind when changing files, or explicitly mention them here.
 
 # ---- Create library ----
-# add_executable(crafting_interp src/impls/tests.cpp src/impls/catch_main.cpp)
-add_executable(crafting_interp src/main.cpp)
+# add_executable(jlox src/impls/tests.cpp src/impls/catch_main.cpp)
+message(CMAKE_SOURCE_DIR)
+add_executable(jlox ${CMAKE_SOURCE_DIR}/src/main.cpp ${CMAKE_SOURCE_DIR}/src/scanner.cpp)
 # Note: for header-only libraries change all PUBLIC flags to INTERFACE and create an interface
-# target: add_library(crafting_interp INTERFACE) set_target_properties(crafting_interp PROPERTIES
+# target: add_library(jlox INTERFACE) set_target_properties(jlox PROPERTIES
 # INTERFACE_COMPILE_FEATURES cxx_std_17)
 
-target_compile_features(crafting_interp PUBLIC cxx_std_20)
-target_compile_options(crafting_interp PRIVATE -ggdb  -fsanitize=address -fsanitize=undefined -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused )
+target_compile_features(jlox PUBLIC cxx_std_20)
+target_compile_options(jlox PRIVATE -ggdb  -fsanitize=address -fsanitize=undefined -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused )
 
 target_include_directories(
-	crafting_interp PUBLIC $<BUILD_INTERFACE: ${fmt_INCLUDE_DIRS}  ${Catch2_INCLUDE_DIRS} >
+    jlox PUBLIC $<BUILD_INTERFACE: ${fmt_INCLUDE_DIRS}  ${Catch2_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src>
 )
 
-target_link_libraries(crafting_interp PRIVATE -lasan -lubsan fmt::fmt Catch2::Catch2 )
+target_link_libraries(jlox PRIVATE -lasan -lubsan fmt::fmt Catch2::Catch2 )
 
 # ---- Create an installable target ----
 # this allows users to install and find the library via `find_package()`.
