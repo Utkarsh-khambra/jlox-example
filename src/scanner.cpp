@@ -63,9 +63,9 @@ public:
 
   constexpr Token get_identifier(char starting_char) noexcept {
     // Only alphas are allowed in identifiers;
-    auto indentifier = starting_char + std::string(consume_till(
-                           [](char a) noexcept { return !std::isalpha(a); })) 
-                       ;
+    auto indentifier =
+        starting_char + std::string(consume_till(
+                            [](char a) noexcept { return !std::isalpha(a); }));
     return match_ident_or_keyword(std::move(indentifier));
   }
 
@@ -78,7 +78,7 @@ public:
 
 private:
   Token match_ident_or_keyword(std::string str) noexcept {
-      auto itr = keyword_map.find(str);
+    auto itr = keyword_map.find(str);
     if (itr != keyword_map.end())
       return Token(itr->second, std::move(str), LineOffset{0});
     return Token(TokenType::Identifier, std::move(str), LineOffset{0});
@@ -87,9 +87,10 @@ private:
   // Doesn't include the itr in resulting itr;
   template <std::forward_iterator Itr>
   std::string_view consume_upto(Itr itr) noexcept {
-    auto str =
-        m_source_code.substr(0, std::distance(m_source_code.begin(), itr));
-    m_source_code.remove_prefix(std::distance(m_source_code.begin(), itr));
+    auto str = m_source_code.substr(
+        0, static_cast<size_t>(std::distance(m_source_code.begin(), itr)));
+    m_source_code.remove_prefix(
+        static_cast<size_t>(std::distance(m_source_code.begin(), itr)));
     return str;
   }
   const std::unordered_map<std::string, TokenType> keyword_map{
@@ -99,7 +100,8 @@ private:
       {"true", TokenType::True},     {"nil", TokenType::Nil},
       {"or", TokenType::Or},         {"and", TokenType::And},
       {"return", TokenType::Return}, {"super", TokenType::Super},
-      {"this", TokenType::This},     {"var", TokenType::Var}};
+      {"this", TokenType::This},     {"var", TokenType::Var},
+      {"def", TokenType::Def}};
   std::string_view m_source_code;
 };
 
@@ -196,19 +198,21 @@ Generator<std::expected<Token, int>> Scanner::tokenize(std::string_view src) {
       }
       break;
     }
-    case '"':
+    case '"': {
       co_yield source_code.get_string();
       break;
+    }
     case ' ':
       [[fallthrough]];
     case '\t':
       [[fallthrough]];
     case '\r':
-      break;
-    case '\n':
+      [[fallthrough]];
+    case '\n': {
       ++line_nr;
       break;
-    default:
+    }
+    default: {
       if (std::isdigit(c)) {
         co_yield source_code.get_number();
         break;
@@ -218,17 +222,18 @@ Generator<std::expected<Token, int>> Scanner::tokenize(std::string_view src) {
       }
       co_yield std::unexpected(4);
     }
+    }
   }
 }
 
-void Scanner::run_prompt() {
-  std::string current_line;
-  while (std::getline(std::cin, current_line)) {
-    eval_statement(current_line);
-  }
-}
+// void Scanner::run_prompt() {
+//   std::string current_line;
+//   while (std::getline(std::cin, current_line)) {
+//     eval_statement(current_line);
+//   }
+// }
 
-void Scanner::eval_statement(std::string_view statement) {
-
-  fmt::print("{}\n", statement);
-}
+// void Scanner::eval_statement(std::string_view statement) {
+//
+//   fmt::print("{}\n", statement);
+// }

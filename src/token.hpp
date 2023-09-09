@@ -45,7 +45,8 @@ enum class TokenType {
   Return,
   Super,
   This,
-  Var
+  Var,
+  Def
 };
 
 enum class LineOffset : size_t {};
@@ -210,6 +211,9 @@ template <> struct formatter<TokenType> {
     }
     case Var: {
       return fmt::format_to(ctx.out(), "Var");
+    }
+    case Def: {
+      return fmt::format_to(ctx.out(), "Def");
     }
     default:
       abort();

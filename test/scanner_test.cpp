@@ -14,10 +14,47 @@ TEST_CASE("Tokenization", "[Scanner]") {
       TokenType::String,    TokenType::Number};
   size_t index = 0;
   for (auto token : scanner.tokenize(src)) {
-    if (!token)
-      fmt::print("{}\n", token.error());
-    else
-      fmt::print("{} {}\n", token.value().type(), types[index]);
+    REQUIRE(token);
+    REQUIRE(token.value().type() == types[index++]);
+  }
+}
+
+TEST_CASE("Tokenization.hello_world", "[Scanner]") {
+  Scanner scanner;
+  std::string src = R"=(print "Hello";)=";
+  std::vector<TokenType> types{TokenType::Identifier, TokenType::String,
+                               TokenType::Semicolon};
+  size_t index = 0;
+  for (auto token : scanner.tokenize(src)) {
+    REQUIRE(token);
+    REQUIRE(token.value().type() == types[index++]);
+  }
+}
+
+TEST_CASE("Tokenization.fibonacci_series", "[Scanner]") {
+  Scanner scanner;
+  std::string src =
+      R"=(def fib(n){
+        if (n < 3){
+            return 1;
+        }
+        return fib(n-1) + fib(n-2);
+      }
+      )=";
+  std::vector<TokenType> types{
+      TokenType::Def,        TokenType::Identifier, TokenType::LeftParen,
+      TokenType::Identifier, TokenType::RightParen, TokenType::LeftBrace,
+      TokenType::If,         TokenType::LeftParen,  TokenType::Identifier,
+      TokenType::Less,       TokenType::Number,     TokenType::RightParen,
+      TokenType::LeftBrace,  TokenType::Return,     TokenType::Number,
+      TokenType::Semicolon,  TokenType::RightBrace, TokenType::Return,
+      TokenType::Identifier, TokenType::LeftParen,  TokenType::Identifier,
+      TokenType::Minus,      TokenType::Number,     TokenType::RightParen,
+      TokenType::Plus,       TokenType::Identifier, TokenType::LeftParen,
+      TokenType::Identifier, TokenType::Minus,      TokenType::Number,
+      TokenType::RightParen, TokenType::Semicolon,  TokenType::RightBrace};
+  size_t index = 0;
+  for (auto token : scanner.tokenize(src)) {
     REQUIRE(token);
     REQUIRE(token.value().type() == types[index++]);
   }
