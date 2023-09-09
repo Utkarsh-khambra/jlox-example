@@ -79,7 +79,7 @@ public:
 
   iterator begin() {
     if (!m_handle) {
-        fmt::print("Bye");
+      fmt::print("Bye");
       return handle_t(nullptr);
     }
 

@@ -4,13 +4,21 @@
 
 TEST_CASE("Tokenization", "[Scanner]") {
   Scanner scanner;
-  std::string src = R"=(() == != > < <=   )=";
-  std::vector<TokenType> types{TokenType::LeftParen, TokenType::RightParen,TokenType::Equal,
-                               TokenType::BangEqual, TokenType::Greater,
-                               TokenType::Less,      TokenType::LessEqual};
+  std::string src =
+      R"=(() == != > < for if else var while  <= "Man this is working alright I hope" 34325235235  )=";
+  std::vector<TokenType> types{
+      TokenType::LeftParen, TokenType::RightParen, TokenType::Equal,
+      TokenType::BangEqual, TokenType::Greater,    TokenType::Less,
+      TokenType::For,       TokenType::If,         TokenType::Else,
+      TokenType::Var,       TokenType::While,      TokenType::LessEqual,
+      TokenType::String,    TokenType::Number};
   size_t index = 0;
   for (auto token : scanner.tokenize(src)) {
-      REQUIRE(token);
-      REQUIRE(token.value().type() == types[index++]);
+    if (!token)
+      fmt::print("{}\n", token.error());
+    else
+      fmt::print("{} {}\n", token.value().type(), types[index]);
+    REQUIRE(token);
+    REQUIRE(token.value().type() == types[index++]);
   }
 }

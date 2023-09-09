@@ -1,9 +1,10 @@
 #pragma once
 #include "token.hpp"
-#include <generator.hpp>
 #include <expected>
+#include <generator.hpp>
 #include <string_view>
 #include <vector>
+
 class Scanner {
 public:
   void scan(std::string_view filepath);
