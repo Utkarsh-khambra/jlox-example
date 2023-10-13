@@ -4,6 +4,7 @@
 #include <string>
 enum class TokenType {
   // Sinle char
+  EoF,
   LeftParen,
   RightParen,
   LeftBrace,

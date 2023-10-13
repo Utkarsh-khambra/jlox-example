@@ -6,9 +6,11 @@
 #include <cstdlib>
 #include <expected>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <fstab.h>
 #include <fstream>
 #include <iostream>
+#include <optional>
 #include <unordered_map>
 
 class SourceCode {
@@ -37,9 +39,28 @@ public:
   }
 
   template <typename F>
+    requires(std::invocable<F, char>)
   constexpr std::string_view consume_till(F &&pred) noexcept {
     auto itr = std::ranges::find_if(m_source_code, pred);
     return consume_upto(itr);
+  }
+
+  constexpr std::optional<std::string_view>
+  consume_till(std::string_view sentinal) noexcept {
+    assert(!sentinal.empty());
+    auto itr = std::ranges::find(m_source_code, sentinal.front());
+    if (std::distance(itr, m_source_code.end()) < sentinal.size())
+      return std::nullopt; // Error case
+    for (; !sentinal.empty(); sentinal.remove_prefix(1)) {
+      if (*itr == sentinal.front())
+        ++itr;
+      else
+        break;
+    }
+
+    if (sentinal.empty())
+      return consume_upto(itr);
+    return std::nullopt; // Error
   }
 
   // Caller must have consumed starting quoting
@@ -192,7 +213,13 @@ Generator<std::expected<Token, int>> Scanner::tokenize(std::string_view src) {
     case '/': {
       auto const result = source_code.match_next('/', 1);
       if (result) {
+        // I think this should also handle errors
         source_code.consume_till([](char a) noexcept { return a == '\n'; });
+      } else if (source_code.match_next('*', 1)) {
+        auto result = source_code.consume_till("*/");
+        if (!result) {
+          co_yield std::unexpected(5);
+        }
       } else {
         co_yield Token(TokenType::Slash, "/", line_nr);
       }
@@ -224,6 +251,7 @@ Generator<std::expected<Token, int>> Scanner::tokenize(std::string_view src) {
     }
     }
   }
+  co_yield Token(TokenType::EoF, "", line_nr);
 }
 
 // void Scanner::run_prompt() {
