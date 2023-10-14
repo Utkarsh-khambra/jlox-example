@@ -15,7 +15,7 @@
 
 class SourceCode {
 public:
-  using Result = std::expected<Token, int>;
+  using Result = std::expected<Token, ScanError>;
   constexpr SourceCode(std::string_view src) : m_source_code(src) {}
 
   // Matches the nth character to be a in src;
@@ -70,7 +70,7 @@ public:
     // To consume remaining quote
     consume(1);
     if (itr == m_source_code.end())
-      return std::unexpected(1);
+      return std::unexpected(ScanError::NoString);
     return Token(TokenType::String, std::string(str), LineOffset{0});
   }
 
@@ -134,7 +134,8 @@ void Scanner::scan(std::string_view filepath) {
                      std::istream_iterator<char>());
 }
 
-Generator<std::expected<Token, int>> Scanner::tokenize(std::string_view src) {
+Generator<std::expected<Token, ScanError>>
+Scanner::tokenize(std::string_view src) {
   SourceCode source_code(src);
   LineOffset line_nr{1};
   while (source_code) {
@@ -218,7 +219,7 @@ Generator<std::expected<Token, int>> Scanner::tokenize(std::string_view src) {
       } else if (source_code.match_next('*', 1)) {
         auto result = source_code.consume_till("*/");
         if (!result) {
-          co_yield std::unexpected(5);
+          co_yield std::unexpected(ScanError::NoMultiLineComment);
         }
       } else {
         co_yield Token(TokenType::Slash, "/", line_nr);
@@ -247,7 +248,7 @@ Generator<std::expected<Token, int>> Scanner::tokenize(std::string_view src) {
         co_yield source_code.get_identifier(c);
         break;
       }
-      co_yield std::unexpected(4);
+      co_yield std::unexpected(ScanError::NoScanableToken);
     }
     }
   }

@@ -5,11 +5,18 @@
 #include <string_view>
 #include <vector>
 
+enum class ScanError {
+  NoString,           // Invalid string
+  NoMultiLineComment, // Invalid multiline comment
+  NoScanableToken
+};
+
 class Scanner {
 public:
   void scan(std::string_view filepath);
 
-  Generator<std::expected<Token, int>> tokenize(std::string_view source_code);
+  Generator<std::expected<Token, ScanError>>
+  tokenize(std::string_view source_code);
   void run_prompt();
 
 private:
