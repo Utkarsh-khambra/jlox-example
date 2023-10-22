@@ -216,6 +216,9 @@ template <> struct formatter<TokenType> {
     case Def: {
       return fmt::format_to(ctx.out(), "Def");
     }
+    case EoF: {
+      return fmt::format_to(ctx.out(), "EOF");
+    }
     default:
       abort();
     }
