@@ -100,7 +100,10 @@ constexpr Expr Parser::primary() noexcept {
   // TODO check this for when should next_token be called
   if (match_any(LeftParen) && next_token()) {
     auto expr = expression();
-    match_any(RightBrace);
+    // TODO better error handling
+    if (!match_any(RightParen))
+      abort();
+    next_token();
     return expr;
   }
 }
