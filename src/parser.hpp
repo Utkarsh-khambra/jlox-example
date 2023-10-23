@@ -30,12 +30,16 @@ struct UnaryExpr {
       : expr(std::move(expression)), opr(oper) {}
 };
 
+// TODO see if some better repre is possible
+using ObjectType = std::variant<std::string, float>;
 struct Literal {
   TokenType type;
-  std::optional<float> value;
+  std::optional<ObjectType> value;
   Literal(Token t) : type(t.type()), value(t.value()) {}
   Literal(TokenType t) : type(t), value(std::nullopt) {}
   Literal(float v) : type(TokenType::Number), value(v) {}
+  Literal(std::string_view v)
+      : type(TokenType::String), value(std::string(v)) {}
 };
 
 class Parser {

@@ -7,7 +7,7 @@ using LiteralPtr = std::unique_ptr<Literal>;
 
 class Interpreter {
 public:
-  auto operator()(const Literal &l) const noexcept { return l.value; }
+  auto operator()(const LiteralPtr &l) const noexcept { return *l; }
   auto operator()(const UnaryExprPtr &expr) const noexcept {
     return evaluate_unary(*expr);
   }
@@ -18,9 +18,11 @@ public:
 private:
   Literal evaluate(const Expr &expr) const noexcept {
     if (std::holds_alternative<std::unique_ptr<UnaryExpr>>(expr))
-      evaluate_unary(*std::get<std::unique_ptr<UnaryExpr>>(expr));
+      return evaluate_unary(*std::get<std::unique_ptr<UnaryExpr>>(expr));
     else if (std::holds_alternative<std::unique_ptr<BinaryExpr>>(expr))
-      evaluate_binary(*std::get<std::unique_ptr<BinaryExpr>>(expr));
+      return evaluate_binary(*std::get<std::unique_ptr<BinaryExpr>>(expr));
+    else if (std::holds_alternative<LiteralPtr>(expr))
+      return operator()(std::get<LiteralPtr>(expr));
   }
 
   Literal evaluate_unary(const UnaryExpr &expr) const noexcept {
