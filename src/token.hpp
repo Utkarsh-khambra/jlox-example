@@ -1,7 +1,9 @@
 #pragma once
 #include <cstddef>
 #include <fmt/format.h>
+#include <optional>
 #include <string>
+#include <variant>
 enum class TokenType {
   // Sinle char
   EoF,
@@ -57,17 +59,27 @@ LineOffset operator++(LineOffset line) noexcept;
 
 class Token {
 public:
+  // using TokenValue =
+  //     std::variant<std::monostate, float, int, std::string, bool>;
+  using TokenValue = std::optional<float>;
+
   Token() {}
-  Token(TokenType type, std::string value, LineOffset line_nr,
+  Token(TokenType type, std::string lexeme, LineOffset line_nr,
         ColumnOffset col_nr = ColumnOffset{0})
-      : m_line_nr(line_nr), m_col_nr(col_nr), m_type(type), m_value(value) {}
+      : m_line_nr(line_nr), m_col_nr(col_nr), m_type(type),
+        m_lexeme_value(lexeme), m_value(std::nullopt) {}
+
   TokenType type() const noexcept { return m_type; }
+  std::string lexeme() const noexcept { return m_lexeme_value; }
+  void set_value(float v) noexcept { m_value = v; }
+  auto value() const noexcept { return m_value; }
 
 private:
   LineOffset m_line_nr;
   ColumnOffset m_col_nr;
   TokenType m_type;
-  std::string m_value;
+  std::string m_lexeme_value;
+  TokenValue m_value;
 };
 
 namespace fmt {

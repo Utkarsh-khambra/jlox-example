@@ -1,6 +1,7 @@
 #include "scanner.hpp"
 #include "generator.hpp"
 #include <cassert>
+#include <charconv>
 #include <concepts>
 #include <coroutine>
 #include <cstdlib>
@@ -242,7 +243,16 @@ Scanner::tokenize(std::string_view src) {
     }
     default: {
       if (std::isdigit(c)) {
-        co_yield source_code.get_number();
+        auto token = source_code.get_number();
+        // TODO refactor to make a nice api for getting numbers;
+        std::string s = c + token.lexeme();
+        float value = 0;
+        auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), value);
+        // TODO better error handling
+        if (ec != std::errc())
+          abort();
+        token.set_value(value);
+        co_yield token;
         break;
       } else if (std::isalpha(c)) {
         co_yield source_code.get_identifier(c);

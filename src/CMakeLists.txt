@@ -22,8 +22,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # ---- Add dependencies via CPM ----
 # see https://github.com/TheLartians/CPM.cmake for more info
 
-find_package(fmt REQUIRED)
-find_package(Catch2 REQUIRED)
+find_package(fmt REQUIRED )
 # ---- Add source files ----
 
 # Note: globbing sources is considered bad practice as CMake's generators may not detect new files
@@ -42,10 +41,10 @@ target_compile_features(jlox PUBLIC cxx_std_23)
 target_compile_options(jlox PRIVATE -ggdb -fcoroutines -fdiagnostics-color=always  -fsanitize=address -fsanitize=undefined -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused )
 
 target_include_directories(
-    jlox PUBLIC $<BUILD_INTERFACE: ${fmt_INCLUDE_DIRS}  ${Catch2_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src>
+    jlox PUBLIC $<BUILD_INTERFACE: ${fmt_INCLUDE_DIRS}  ${PROJECT_SOURCE_DIR}/src>
 )
 
-target_link_libraries(jlox PRIVATE -lasan -lubsan fmt::fmt Catch2::Catch2 )
+target_link_libraries(jlox PRIVATE -lasan -lubsan fmt::fmt)
 
 export(TARGETS jlox FILE jlox-config.cmake NAMESPACE jlox::)
 
