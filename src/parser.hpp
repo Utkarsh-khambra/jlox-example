@@ -6,7 +6,7 @@
 
 struct UnaryExpr;
 struct BinaryExpr;
-struct Literal;
+using Literal = std::variant<std::string, float, bool>;
 
 using UnaryExprPtr = std::unique_ptr<UnaryExpr>;
 using BinaryExprPtr = std::unique_ptr<BinaryExpr>;
@@ -31,16 +31,15 @@ struct UnaryExpr {
 };
 
 // TODO see if some better repre is possible
-using ObjectType = std::variant<std::string, float>;
-struct Literal {
-  TokenType type;
-  std::optional<ObjectType> value;
-  Literal(Token t) : type(t.type()), value(t.value()) {}
-  Literal(TokenType t) : type(t), value(std::nullopt) {}
-  Literal(float v) : type(TokenType::Number), value(v) {}
-  Literal(std::string_view v)
-      : type(TokenType::String), value(std::string(v)) {}
-};
+// struct Literal {
+//   TokenType type;
+//   std::optional<ObjectType> value;
+//   Literal(Token t) : type(t.type()), value(t.value()) {}
+//   Literal(TokenType t) : type(t), value(std::nullopt) {}
+//   Literal(float v) : type(TokenType::Number), value(v) {}
+//   Literal(std::string_view v)
+//       : type(TokenType::String), value(std::string(v)) {}
+// };
 
 class Parser {
 public:
@@ -82,37 +81,43 @@ private:
 };
 
 namespace fmt {
+template <> struct formatter<Literal> {
+
+  constexpr auto parse(format_parse_context &ctx)
+      -> format_parse_context::iterator {
+    auto it = ctx.begin(), end = ctx.end();
+    return it;
+  }
+
+  auto format(const Literal &t, format_context &ctx) const
+      -> format_context::iterator {
+    if (std::holds_alternative<float>(t)) {
+      return fmt::format_to(ctx.out(), "Number");
+    }
+    if (std::holds_alternative<bool>(t)) {
+      return fmt::format_to(ctx.out(), "{}",
+                            std::get<bool>(t) ? "True" : "False");
+    }
+    if (std::holds_alternative<std::string>(t)) {
+      return fmt::format_to(ctx.out(), "String");
+    }
+  }
+};
+} // namespace fmt
+
+namespace fmt {
 template <> struct formatter<Expr> {
 
   constexpr auto parse(format_parse_context &ctx)
       -> format_parse_context::iterator {
-    // [ctx.begin(), ctx.end()) is a character range that contains a part of
-    // the format string starting from the format specifications to be parsed,
-    // e.g. in
-    //
-    //   fmt::format("{:f} - point of interest", point{1, 2});
-    //
-    // the range will contain "f} - point of interest". The formatter should
-    // parse specifiers until '}' or the end of the range. In this example
-    // the formatter should parse the 'f' specifier and return an iterator
-    // pointing to '}'.
-
-    // Please also note that this character range may be empty, in case of
-    // the "{}" format string, so therefore you should check ctx.begin()
-    // for equality with ctx.end().
-
-    // Parse the presentation format and store it in the formatter:
     auto it = ctx.begin(), end = ctx.end();
-    // Check if reached the end of the range:
-
-    // Return an iterator past the end of the parsed range:
     return it;
   }
 
   auto format(const Expr &t, format_context &ctx) const
       -> format_context::iterator {
     if (std::holds_alternative<LiteralPtr>(t)) {
-      return fmt::format_to(ctx.out(), "{}", std::get<LiteralPtr>(t)->type);
+      return fmt::format_to(ctx.out(), "{}", *std::get<LiteralPtr>(t));
     }
     if (std::holds_alternative<UnaryExprPtr>(t)) {
       const auto &ptr = std::get<UnaryExprPtr>(t);

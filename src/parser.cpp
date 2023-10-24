@@ -92,11 +92,36 @@ constexpr Expr Parser::unary() noexcept {
 
 constexpr Expr Parser::primary() noexcept {
   // fmt::print("primary {}\n", m_current_token.type());
-  if (match_any(Number, String, True, False, Nil, EoF)) {
+
+  switch (m_current_token.type()) {
+  case Number: {
     auto matched_token = m_current_token;
     next_token();
-    return std::make_unique<Literal>(matched_token);
+    return std::make_unique<Literal>(*matched_token.value());
   }
+  case String: {
+    auto matched_token = m_current_token;
+    next_token();
+    return std::make_unique<Literal>(matched_token.lexeme());
+  }
+  case True:
+    next_token();
+    return std::make_unique<Literal>(true);
+  case False:
+    next_token();
+    return std::make_unique<Literal>(false);
+    // TODO handle these
+  case EoF:
+    next_token();
+    return {};
+    // case Nil:
+  }
+
+  // if (match_any(Number, String, True, False, Nil, EoF)) {
+  //   auto matched_token = m_current_token;
+  //   next_token();
+  //   return std::make_unique<Literal>(matched_token);
+  // }
   // TODO check this for when should next_token be called
   if (match_any(LeftParen) && next_token()) {
     auto expr = expression();
